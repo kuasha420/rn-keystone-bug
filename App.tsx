@@ -8,107 +8,73 @@
  * @format
  */
 
-import React from 'react';
+import {observer} from 'mobx-react-lite';
+import React, {useMemo} from 'react';
 import {
+  Button,
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
-  View,
 } from 'react-native';
+import {KeystoneProvider, useKeystoneStore} from './src/stores/keystone';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const Main = observer(() => {
+  const store = useKeystoneStore();
+  const systemColorScheme = useColorScheme();
 
-const Section: React.FC<{
-  title: string;
-}> = ({children, title}) => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const backgroundStyle = useMemo(() => {
+    const colorScheme = store.currentColorScheme;
+    if (colorScheme === 'auto') {
+      if (systemColorScheme === 'light') {
+        return styles.backgroundLight;
+      }
+      return styles.backgroundDark;
+    }
+    if (colorScheme === 'light') {
+      return styles.backgroundLight;
+    }
+    return styles.backgroundDark;
+  }, [store.currentColorScheme, systemColorScheme]);
+
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
+    <SafeAreaView style={[styles.container, backgroundStyle]}>
+      <Text>Current color scheme: {store.currentColorScheme}</Text>
+      <Button
+        title="Set color scheme to light"
+        onPress={() => store.setUserColorScheme('light')}
+      />
+      <Button
+        title="Set color scheme to dark"
+        onPress={() => store.setUserColorScheme('dark')}
+      />
+      <Button
+        title="Set color scheme to auto"
+        onPress={() => store.setUserColorScheme('auto')}
+      />
+    </SafeAreaView>
   );
-};
+});
 
 const App = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <KeystoneProvider>
+      <Main />
+    </KeystoneProvider>
   );
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  backgroundLight: {
+    backgroundColor: '#ccc',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  backgroundDark: {
+    backgroundColor: '#222',
   },
 });
 
